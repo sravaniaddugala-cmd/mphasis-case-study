@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: transaction-processor
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: never
+
+app:
+  kafka:
+    # Topic names are configuration placeholders. The assessment version simulates topic metadata
+    # over REST and does not connect to a live Kafka broker yet.
+    topics:
+      payment-inbound: ${KAFKA_TOPIC_PAYMENT_INBOUND:payments.inbound}
+      payment-retry: ${KAFKA_TOPIC_PAYMENT_RETRY:payments.retry}
+      payment-dead-letter: ${KAFKA_TOPIC_PAYMENT_DLT:payments.dead-letter}
+      audit: ${KAFKA_TOPIC_AUDIT:payments.audit}
+    retry:
+      max-retries: ${KAFKA_MAX_RETRIES:3}
+      replay-interval-ms: ${KAFKA_REPLAY_INTERVAL_MS:3600000}
+  clients:
+    ledger:
+      base-url: ${LEDGER_CLIENT_BASE_URL:http://localhost:8091}
+      connect-timeout-ms: ${LEDGER_CLIENT_CONNECT_TIMEOUT_MS:2000}
+      read-timeout-ms: ${LEDGER_CLIENT_READ_TIMEOUT_MS:5000}
+      username: ${LEDGER_CLIENT_USERNAME:}
+      # Supply credentials through environment variables or a secret manager, never commit secrets.
+      password: ${LEDGER_CLIENT_PASSWORD:}
+    account-management:
+      base-url: ${ACCOUNT_CLIENT_BASE_URL:http://localhost:8092}
+      username: ${ACCOUNT_CLIENT_USERNAME:}
+      password: ${ACCOUNT_CLIENT_PASSWORD:}
+  security:
+    # Placeholder only; authentication is not wired into this assessment implementation.
+    api-key-header: ${API_KEY_HEADER:X-API-Key}
+    api-key: ${API_KEY:}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] %logger{36} - %msg%n"
